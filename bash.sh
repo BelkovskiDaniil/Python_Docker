@@ -2,4 +2,4 @@
 
 chmod +x ./bash
 
-sudo docker-compose up --build
+docker-compose up --build

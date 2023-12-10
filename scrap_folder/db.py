@@ -9,8 +9,8 @@ class Database:
     def check_and_create_db(self):
         cursor = self.conn.cursor()
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS vacancies
-            (direction text, href text, vacancy text, location text)
+            CREATE TABLE IF NOT EXISTS new_database
+            (direction text, href text, vacancy text, location text, recomendations text)
         ''')
         self.conn.commit()
         # self.conn.close()
@@ -18,71 +18,133 @@ class Database:
     def clear_db(self):
         cursor = self.conn.cursor()
         cursor.execute('''
-            DELETE FROM vacancies
+            DELETE FROM new_database
         ''')
         self.conn.commit()
         # self.conn.close()
 
-    def add_entry(self, direction, href, vacancy, location):
+    def add_entry(self, direction, href, vacancy, location, recomendations):
         cursor = self.conn.cursor()
         cursor.execute('''
-            INSERT INTO vacancies VALUES (%s, %s, %s, %s)
-        ''', (direction, href, vacancy, location))
+            INSERT INTO new_database VALUES (%s, %s, %s, %s, %s)
+        ''', (direction, href, vacancy, location, recomendations))
         self.conn.commit()
         # self.conn.close()
 
-    def print_table(self):
-        cursor = self.conn.cursor()
-        cursor.execute('SELECT * FROM vacancies')
-        rows = cursor.fetchall()
-        grouped_rows = {}
-        for row in rows:
-            direction, href, vacancy, location = row
-            if direction not in grouped_rows:
-                grouped_rows[direction] = []
-            grouped_rows[direction].append((href, vacancy, location))
-        for direction, vacancies in grouped_rows.items():
-            print(direction + ':')
-            for href, vacancy, location in vacancies:
-                print("    " + href + ", " + vacancy + ", " + location)
-        # self.conn.close()
 
     def return_directions(self):
         cursor = self.conn.cursor()
-        cursor.execute('SELECT * FROM vacancies')
+        cursor.execute('SELECT * FROM new_database')
         rows = cursor.fetchall()
         set_directions = set()
         for row in rows:
-            direction, href, vacancy, location = row
+            direction, href, vacancy, location, recomendations = row
             set_directions.add(direction)
         # self.conn.close()
         return set_directions
 
+    # def return_cities(self, direction_selected):
+    #     cursor = self.conn.cursor()
+    #     cursor.execute('SELECT * FROM new_database')
+    #     rows = cursor.fetchall()
+    #     set_cities = set()
+    #     for row in rows:
+    #         direction, href, vacancy, location, recomendations = row
+    #         if direction == direction_selected:
+    #             for elem in location.split(', '):
+    #                 set_cities.add(elem)
+    #     # self.conn.close()
+    #     return set_cities
+
     def return_cities(self, direction_selected):
         cursor = self.conn.cursor()
-        cursor.execute('SELECT * FROM vacancies')
+        cursor.execute("SELECT * FROM new_database WHERE direction = %s", (direction_selected,))
         rows = cursor.fetchall()
         set_cities = set()
         for row in rows:
-            direction, href, vacancy, location = row
-            if direction == direction_selected:
-                for elem in location.split(', '):
-                    set_cities.add(elem)
+            direction, href, vacancy, location, recomendations = row
+            for elem in location.split(', '):
+                set_cities.add(elem)
         # self.conn.close()
         return set_cities
 
+
+    
+    # def return_recomendations(self, direction_selected, city_selected):
+    #     cursor = self.conn.cursor()
+    #     cursor.execute('SELECT * FROM new_database')
+    #     rows = cursor.fetchall()
+    #     array_vacancies = []
+    #     were_recom = set()
+    #     for row in rows:
+    #         direction, href, vacancy, location, recomendations = row
+    #         if direction == direction_selected:
+    #             for elem in location.split(', '):
+    #                 if elem == city_selected and vacancy not in were_recom:
+    #                     for element in recomendations.split('@'):
+    #                         if element not in were_recom:
+    #                             array_vacancies.append(element.title())
+    #                             were_recom.add(element)
+    #     # self.conn.close()
+    #     return array_vacancies
+
+    def return_recomendations(self, direction_selected, city_selected):
+        cursor = self.conn.cursor()
+        query = """
+        SELECT * FROM new_database 
+        WHERE direction = %s AND location LIKE %s
+        """
+        cursor.execute(query, (direction_selected, '%' + city_selected + '%',))
+        rows = cursor.fetchall()
+        array_vacancies = []
+        were_recom = set()
+        for row in rows:
+            direction, href, vacancy, location, recomendations = row
+            for elem in location.split(', '):
+                if elem == city_selected and vacancy not in were_recom:
+                    for element in recomendations.split('@'):
+                        if element not in were_recom:
+                            array_vacancies.append(element.title())
+                            were_recom.add(element)
+        # self.conn.close()
+        return array_vacancies
+
+
+
+
+    # def return_vacancies(self, direction_selected, city_selected):
+    #     cursor = self.conn.cursor()
+    #     cursor.execute('SELECT * FROM new_database')
+    #     rows = cursor.fetchall()
+    #     array_vacancies = []
+    #     were = set()
+    #     for row in rows:
+    #         direction, href, vacancy, location, recomendations = row
+    #         if direction == direction_selected:
+    #             for elem in location.split(', '):
+    #                 if elem == city_selected and vacancy not in were:
+    #                     array_vacancies.append([vacancy, href, recomendations])
+    #                     were.add(vacancy)
+    #     # self.conn.close()
+    #     return array_vacancies
+
     def return_vacancies(self, direction_selected, city_selected):
         cursor = self.conn.cursor()
-        cursor.execute('SELECT * FROM vacancies')
+        query = """
+        SELECT * FROM new_database 
+        WHERE direction = %s AND location LIKE %s
+        """
+        cursor.execute(query, (direction_selected, '%' + city_selected + '%',))
         rows = cursor.fetchall()
         array_vacancies = []
         were = set()
         for row in rows:
-            direction, href, vacancy, location = row
-            if direction == direction_selected:
-                for elem in location.split(', '):
-                    if elem == city_selected and vacancy not in were:
-                        array_vacancies.append([vacancy, href])
-                        were.add(vacancy)
+            direction, href, vacancy, location, recomendations = row
+            for elem in location.split(', '):
+                if elem == city_selected and vacancy not in were:
+                    array_vacancies.append([vacancy, href, recomendations])
+                    were.add(vacancy)
         # self.conn.close()
         return array_vacancies
+
+

@@ -15,19 +15,24 @@ services:
     networks:
       - my_net
 
-  bot:
-    build: ./bot_folder
-    ports:
-      - "5000:5000"
-    networks:
-      - my_net
-  
   scrap:
     build: ./scrap_folder
     ports:
       - "5001:5001"
     networks:
       - my_net
+    depends_on:
+      - db
+
+  bot:
+    build: ./bot_folder
+    ports:
+      - "5000:5000"
+    networks:
+      - my_net
+    depends_on:
+      - db
+      - scrap
 
 volumes:
   postgres-data:

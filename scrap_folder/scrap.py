@@ -51,31 +51,24 @@ def scrap_submissive(url: str):
         )
 
         for h3 in h3s:
-            # print(h3.text, file=sys.stderr)
             if h3.text == "Требования:":
                 sibling = h3
                 key = True
                 while key:
-                    # print("On cycle", file=sys.stderr)
                     siblings = sibling.find_elements(By.XPATH, './following-sibling::*')
                     for sib in siblings:
-                        # print(sib.tag_name, file=sys.stderr)
                         if sib.tag_name == 'h3':
-                            # print("Break", file=sys.stderr)
                             key = False
                             break
                         elif sib.tag_name == 'ul':
                             lis = sib.find_elements(By.TAG_NAME, 'li')
                             for li in lis:
-                                # print("Added li: " + li.text, file=sys.stderr)
                                 requirements.append((li.text).replace("\n", ""))
                         elif sib.tag_name == 'br':
-                            next_s = sib.find_elements(By.XPATH, './following-sibling::*[1]')  # Найти следующий 
+                            next_s = sib.find_elements(By.XPATH, './following-sibling::*[1]')
                             for next_elem in next_s:
                                 if next_elem:
-                                    # print("Added br: " + next_elem.text, file=sys.stderr)
                                     requirements.append(((next_elem.text).replace("• ", "")).replace("\n", ""))
-        # print('@'.join(requirements).replace(';', ''), file=sys.stderr)
         return requirements
     finally:
         driver.quit()
@@ -114,7 +107,6 @@ def scrap():
                 array_small.append(betta.replace('\n', ''))
                 array_small.append(gamma.replace('\n', ''))
                 array_small.append('@'.join(scrap_submissive(alpha.replace('\n', ''))).replace(';', ''))
-            # print("Added to array-vac", file=sys.stderr)
             array_vac.append(array_small)
 
     finally:
@@ -122,14 +114,10 @@ def scrap():
 
     print("Adding", file=sys.stderr)
     print("check and create")
-    # db.clear_db()
     db.check_and_create_db()
     for elem in array_vac:
-        # print("Element in array_vac", file=sys.stderr)
         global_name = elem[0]
         for i in range(1, len(elem), 4):
-            # print("Adding inside", file=sys.stderr)
-            # print(global_name + " " + elem[i] + " " + elem[i + 1] + " " + elem[i + 2] + " " + elem[i + 3], file=sys.stderr)
             db.add_entry(global_name, elem[i], elem[i + 1], elem[i + 2], elem[i + 3])
     return "True"
 

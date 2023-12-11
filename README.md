@@ -29,6 +29,6 @@ cd Python_Docker
 
 git checkout dev 
 
-bash ./bash.sh
+sudo bash ./build.sh
 
 ```

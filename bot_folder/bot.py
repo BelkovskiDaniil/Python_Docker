@@ -34,14 +34,11 @@ def updater_func():
     print("FINISHED UPDATE", file=sys.stderr)
 
 def run_thread():
-    # Запуск функции в первый раз
     updater_func()
     while True:
-        # Запуск функции каждые 3 часа
         time.sleep(3 * 60 * 60)
         updater_func()
 
-# Создание и запуск потока
 thread = threading.Thread(target=run_thread)
 thread.start()
 
@@ -248,6 +245,3 @@ def callback_worker(call):
 
 
 bot.polling(none_stop=True, interval=0)
-
-# if __name__ == "__main__":
-#     app.run(host ='0.0.0.0', port = 5000, debug = True)

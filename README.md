@@ -12,7 +12,7 @@ In addition, the ability to select a job based on skills has been added.
 
 # Build
 
-You need to run bash.sh
+You need to run build.sh
 
 # Requirements
 
